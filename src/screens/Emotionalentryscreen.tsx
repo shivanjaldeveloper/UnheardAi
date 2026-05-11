@@ -13,6 +13,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 
 import LinearGradient from 'react-native-linear-gradient';
@@ -25,6 +26,8 @@ import {
 import { wp, hp } from '../utils/responsive';
 import { ApiService } from '../services/ApiService';
 
+import { useTheme } from '../theme/ThemeContext';
+
 type Mood = 'Low' | 'Stressed' | 'Okay' | 'Just want to talk' | null;
 
 const MOODS: { label: Mood; emoji: string }[] = [
@@ -36,6 +39,10 @@ const MOODS: { label: Mood; emoji: string }[] = [
 
 const EmotionalEntryScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
+
+  const { theme, isDark, toggleTheme } = useTheme();
+
+  const styles = createStyles(theme, isDark);
 
   const [selectedMood, setSelectedMood] = useState<Mood>(null);
   const [thoughts, setThoughts] = useState('');
@@ -51,6 +58,7 @@ const EmotionalEntryScreen = ({ navigation }: any) => {
 
     try {
       const chatid = await ApiService.createChat();
+
       const mood = selectedMood ?? 'unknown';
 
       const { reply, title } = await ApiService.startChat({
@@ -68,6 +76,7 @@ const EmotionalEntryScreen = ({ navigation }: any) => {
       });
     } catch (error: any) {
       console.error('[EmotionalEntry] flow error:', error);
+
       Alert.alert(
         'Something went wrong',
         error?.message || 'Please try again.',
@@ -82,14 +91,11 @@ const EmotionalEntryScreen = ({ navigation }: any) => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={isDark ? 'light-content' : 'dark-content'}
       />
 
-      <LinearGradient
-        colors={['#090814', '#121225', '#0B0B18']}
-        style={styles.container}
-      >
-        {/* Background Glow */}
+      <LinearGradient colors={theme.gradient} style={styles.container}>
+        {/* Glow */}
         <View style={styles.topGlow} />
         <View style={styles.bottomGlow} />
 
@@ -112,6 +118,9 @@ const EmotionalEntryScreen = ({ navigation }: any) => {
               <ScrollView
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
+                keyboardDismissMode="on-drag"
+                bounces={false}
+                automaticallyAdjustKeyboardInsets
                 contentContainerStyle={[
                   styles.scrollContent,
                   {
@@ -119,15 +128,41 @@ const EmotionalEntryScreen = ({ navigation }: any) => {
                       insets.bottom > 0 ? insets.bottom + hp(14) : hp(15),
                   },
                 ]}
-                automaticallyAdjustKeyboardInsets
-                keyboardDismissMode="on-drag"
-                bounces={false}
               >
-                {/* Top Bar */}
-                {/* Top Bar */}
+                {/* TOP BAR */}
                 <View style={styles.topBar}>
-                  <View />
+                  {/* THEME TOGGLE */}
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    onPress={toggleTheme}
+                    style={[
+                      styles.themeToggle,
+                      {
+                        backgroundColor: isDark
+                          ? 'rgba(139,111,247,0.22)'
+                          : 'rgba(110,86,207,0.12)',
+                      },
+                    ]}
+                  >
+                    <Animated.View
+                      style={[
+                        styles.themeThumb,
+                        {
+                          transform: [
+                            {
+                              translateX: isDark ? wp(5.5) : 0,
+                            },
+                          ],
+                        },
+                      ]}
+                    >
+                      <Text style={styles.thumbIcon}>
+                        {isDark ? '🌙' : '☀️'}
+                      </Text>
+                    </Animated.View>
+                  </TouchableOpacity>
 
+                  {/* HISTORY */}
                   <TouchableOpacity
                     activeOpacity={0.8}
                     style={styles.historyPill}
@@ -137,13 +172,12 @@ const EmotionalEntryScreen = ({ navigation }: any) => {
                   </TouchableOpacity>
                 </View>
 
-                {/* Heading */}
+                {/* TITLE */}
                 <Text style={styles.title}>How are you feeling right now?</Text>
 
-                {/* Subtitle */}
                 <Text style={styles.subtitle}>share what's on your mind.</Text>
 
-                {/* Mood Grid */}
+                {/* MOODS */}
                 <View style={styles.moodGrid}>
                   {MOODS.map(({ label, emoji }) => {
                     const isSelected = selectedMood === label;
@@ -151,7 +185,7 @@ const EmotionalEntryScreen = ({ navigation }: any) => {
                     return (
                       <TouchableOpacity
                         key={label}
-                        activeOpacity={0.85}
+                        activeOpacity={0.88}
                         onPress={() => setSelectedMood(label)}
                         style={[
                           styles.moodCard,
@@ -173,40 +207,42 @@ const EmotionalEntryScreen = ({ navigation }: any) => {
                   })}
                 </View>
 
-                {/* Thoughts Input */}
+                {/* INPUT */}
                 <TextInput
                   value={thoughts}
                   onChangeText={setThoughts}
                   placeholder="What's on your mind?"
-                  placeholderTextColor="#6E6887"
+                  placeholderTextColor={isDark ? '#8B849F' : '#9CA3AF'}
                   style={styles.thoughtInput}
                   multiline
                   textAlignVertical="top"
                   returnKeyType="done"
-                  selectionColor="#8B6FF7"
+                  selectionColor={theme.primary}
                 />
 
-                {/* Button */}
+                {/* BUTTON */}
                 {isLoading ? (
                   <ActivityIndicator
-                    color="#8B6FF7"
                     size="large"
-                    style={{ marginTop: hp(2.5) }}
+                    color={theme.primary}
+                    style={{
+                      marginTop: hp(2.5),
+                    }}
                   />
                 ) : (
                   <TouchableOpacity
                     activeOpacity={0.88}
                     disabled={!isValid}
+                    onPress={handleContinue}
                     style={[
                       styles.button,
                       {
-                        opacity: isValid ? 1 : 0.7,
+                        opacity: isValid ? 1 : 0.65,
                         marginTop: hp(2.5),
                         marginBottom:
                           insets.bottom > 0 ? insets.bottom + hp(1) : hp(3),
                       },
                     ]}
-                    onPress={handleContinue}
                   >
                     <Text style={styles.buttonText}>Continue</Text>
                   </TouchableOpacity>
@@ -222,160 +258,218 @@ const EmotionalEntryScreen = ({ navigation }: any) => {
 
 export default EmotionalEntryScreen;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#090814',
-  },
+const createStyles = (theme: any, isDark: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
 
-  safeArea: {
-    flex: 1,
-  },
+    safeArea: {
+      flex: 1,
+    },
 
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: wp(6),
-    paddingTop: hp(1),
-  },
+    scrollContent: {
+      flexGrow: 1,
+      paddingHorizontal: wp(6),
+      paddingTop: hp(1),
+    },
 
-  topGlow: {
-    position: 'absolute',
-    width: wp(65),
-    height: wp(65),
-    borderRadius: wp(65),
-    backgroundColor: 'rgba(88, 51, 181, 0.22)',
-    top: -wp(20),
-    left: -wp(18),
-  },
+    topGlow: {
+      position: 'absolute',
+      width: wp(65),
+      height: wp(65),
+      borderRadius: wp(65),
+      backgroundColor: theme.glowTop,
+      top: -wp(20),
+      left: -wp(18),
+    },
 
-  bottomGlow: {
-    position: 'absolute',
-    width: wp(72),
-    height: wp(72),
-    borderRadius: wp(72),
-    backgroundColor: 'rgba(33, 70, 184, 0.18)',
-    bottom: -wp(30),
-    right: -wp(25),
-  },
+    bottomGlow: {
+      position: 'absolute',
+      width: wp(72),
+      height: wp(72),
+      borderRadius: wp(72),
+      backgroundColor: theme.glowBottom,
+      bottom: -wp(30),
+      right: -wp(25),
+    },
 
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: hp(3),
-  },
+    topBar: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: hp(3),
+    },
 
-  historyPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: wp(1.5),
+    themeToggleText: {
+      fontSize: wp(5),
+    },
 
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    historyPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
 
-    borderRadius: wp(10),
-    paddingVertical: hp(0.9),
-    paddingHorizontal: wp(4),
+      backgroundColor: theme.overlay,
 
-    borderWidth: 1.2,
-    borderColor: 'rgba(255,255,255,0.35)', // white outline
-  },
+      borderRadius: wp(10),
 
-  historyIcon: {
-    fontSize: wp(3.2),
-  },
+      paddingVertical: hp(0.9),
+      paddingHorizontal: wp(4),
 
-  historyText: {
-    color: '#ffffff',
-    fontSize: wp(3.5),
-    fontWeight: '700',
-  },
+      borderWidth: 1.2,
+      borderColor: theme.border,
+    },
 
-  title: {
-    color: '#F3F2FA',
-    fontSize: wp(5.0),
-    lineHeight: hp(5),
-    fontWeight: '700',
-    letterSpacing: -1,
-    marginBottom: hp(-1),
-  },
+    historyText: {
+      color: theme.textPrimary,
+      fontSize: wp(3.5),
+      fontWeight: '700',
+    },
 
-  subtitle: {
-    color: '#928BAA',
-    fontSize: wp(3.8),
-    lineHeight: hp(2.8),
-    fontWeight: '500',
-    marginBottom: hp(2.0),
-  },
+    title: {
+      color: theme.textPrimary,
+      fontSize: wp(5.0),
+      lineHeight: hp(5),
+      fontWeight: '700',
+      letterSpacing: -1,
+      marginBottom: hp(-1),
+    },
 
-  moodGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: hp(2.5),
-  },
+    subtitle: {
+      color: theme.textSecondary,
+      fontSize: wp(3.8),
+      lineHeight: hp(2.8),
+      fontWeight: '500',
+      marginBottom: hp(2),
+    },
 
-  moodCard: {
-    width: '48%',
-    height: hp(13),
-    borderRadius: wp(5),
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderWidth: 1.2,
-    borderColor: 'rgba(255,255,255,0.07)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: hp(1.5),
-  },
+    moodGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      marginBottom: hp(2.5),
+    },
 
-  moodCardSelected: {
-    backgroundColor: 'rgba(139,111,247,0.16)',
-    borderColor: '#8B6FF7',
-  },
+    moodCard: {
+      width: '48%',
+      height: hp(13),
 
-  moodEmoji: {
-    fontSize: wp(7),
-    marginBottom: hp(0.7),
-  },
+      borderRadius: wp(5),
 
-  moodLabel: {
-    color: '#B7B0D1',
-    fontSize: wp(3.8),
-    fontWeight: '600',
-    textAlign: 'center',
-  },
+      backgroundColor: theme.inputBackground,
 
-  moodLabelSelected: {
-    color: '#FFFFFF',
-  },
+      borderWidth: 1.2,
+      borderColor: theme.border,
 
-  thoughtInput: {
-    width: '100%',
-    minHeight: hp(15),
-    borderRadius: wp(5),
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderWidth: 1.2,
-    borderColor: 'rgba(255,255,255,0.07)',
-    color: '#FFFFFF',
-    fontSize: wp(4),
-    paddingHorizontal: wp(4.5),
-    paddingTop: hp(2),
-    paddingBottom: hp(2),
-    fontWeight: '500',
-    lineHeight: hp(2.8),
-  },
+      justifyContent: 'center',
+      alignItems: 'center',
 
-  button: {
-    width: '100%',
-    height: hp(6.5),
-    borderRadius: wp(5),
-    backgroundColor: '#8B6FF7',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+      marginBottom: hp(1.5),
+    },
 
-  buttonText: {
-    color: '#ffffff',
-    fontSize: wp(4.5),
-    fontWeight: '800',
-    letterSpacing: 0.2,
-  },
-});
+    moodCardSelected: {
+      backgroundColor: isDark
+        ? 'rgba(139,111,247,0.18)'
+        : 'rgba(110,86,207,0.12)',
+
+      borderColor: theme.primary,
+    },
+
+    moodEmoji: {
+      fontSize: wp(7),
+      marginBottom: hp(0.7),
+    },
+
+    moodLabel: {
+      color: theme.textSecondary,
+      fontSize: wp(3.8),
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+
+    moodLabelSelected: {
+      color: theme.textPrimary,
+    },
+
+    thoughtInput: {
+      width: '100%',
+      minHeight: hp(15),
+
+      borderRadius: wp(5),
+
+      backgroundColor: theme.inputBackground,
+
+      borderWidth: 1.2,
+      borderColor: theme.border,
+
+      color: theme.textPrimary,
+
+      fontSize: wp(4),
+
+      paddingHorizontal: wp(4.5),
+      paddingTop: hp(2),
+      paddingBottom: hp(2),
+
+      fontWeight: '500',
+      lineHeight: hp(2.8),
+    },
+
+    button: {
+      width: '100%',
+      height: hp(6.5),
+
+      borderRadius: wp(5),
+
+      backgroundColor: theme.primary,
+
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    themeToggle: {
+      width: wp(14),
+      height: wp(7.5),
+
+      borderRadius: wp(10),
+
+      paddingHorizontal: wp(1),
+
+      justifyContent: 'center',
+
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+
+    themeThumb: {
+      width: wp(5.5),
+      height: wp(5.5),
+
+      borderRadius: wp(5),
+
+      backgroundColor: theme.primary,
+
+      justifyContent: 'center',
+      alignItems: 'center',
+
+      shadowColor: '#000',
+      shadowOpacity: 0.15,
+      shadowRadius: 4,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+
+      elevation: 3,
+    },
+
+    thumbIcon: {
+      fontSize: wp(3),
+    },
+
+    buttonText: {
+      color: '#FFFFFF',
+      fontSize: wp(4.5),
+      fontWeight: '800',
+      letterSpacing: 0.2,
+    },
+  });

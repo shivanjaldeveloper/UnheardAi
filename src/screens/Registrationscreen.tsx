@@ -27,12 +27,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { wp, hp } from '../utils/responsive';
 
+import { useTheme } from '../theme/ThemeContext';
+import { getLogo } from '../utils/getLogo';
+
 const API_BASE = 'https://unheardapi.primeapps.co.in/api';
 const API_AUTH = 'Bearer Y7N7Mh9Z7ZLeMSYspeVwdXJ2Ky2LXc';
 
 const RegistrationScreen = ({ navigation, route }: any) => {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
+
+  const { theme, isDark } = useTheme();
+
+  const styles = createStyles(theme, isDark);
 
   const isSmallDevice = height < 700;
 
@@ -145,13 +152,10 @@ const RegistrationScreen = ({ navigation, route }: any) => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={isDark ? 'light-content' : 'dark-content'}
       />
 
-      <LinearGradient
-        colors={['#090814', '#121225', '#0B0B18']}
-        style={styles.container}
-      >
+      <LinearGradient colors={theme.gradient} style={styles.container}>
         {/* Background Glow */}
         <View style={styles.topGlow} />
         <View style={styles.bottomGlow} />
@@ -209,7 +213,7 @@ const RegistrationScreen = ({ navigation, route }: any) => {
                     ]}
                   >
                     <Image
-                      source={require('../assets/images/unheard-logo.png')}
+                      source={getLogo(isDark)}
                       style={styles.logo}
                       resizeMode="contain"
                     />
@@ -252,24 +256,15 @@ const RegistrationScreen = ({ navigation, route }: any) => {
                       }
                     }}
                     placeholder="How should we call you?"
-                    placeholderTextColor="#5A5480"
+                    placeholderTextColor={theme.placeholder}
                     style={styles.input}
                     returnKeyType="next"
                     autoCapitalize="words"
-                    selectionColor="#8B6FF7"
+                    selectionColor={theme.primary}
                   />
 
                   {!!errors.fullName && (
-                    <Text
-                      style={{
-                        color: '#ff6b6b',
-                        marginBottom: hp(1),
-                        marginTop: -hp(1),
-                        fontSize: wp(3.2),
-                      }}
-                    >
-                      {errors.fullName}
-                    </Text>
+                    <Text style={styles.errorText}>{errors.fullName}</Text>
                   )}
 
                   {/* Username */}
@@ -288,25 +283,16 @@ const RegistrationScreen = ({ navigation, route }: any) => {
                       }
                     }}
                     placeholder="e.g. quiet_thinker"
-                    placeholderTextColor="#5A5480"
+                    placeholderTextColor={theme.placeholder}
                     style={styles.input}
                     returnKeyType="next"
                     autoCapitalize="none"
                     autoCorrect={false}
-                    selectionColor="#8B6FF7"
+                    selectionColor={theme.primary}
                   />
 
                   {!!errors.username && (
-                    <Text
-                      style={{
-                        color: '#ff6b6b',
-                        marginBottom: hp(1),
-                        marginTop: -hp(1),
-                        fontSize: wp(3.2),
-                      }}
-                    >
-                      {errors.username}
-                    </Text>
+                    <Text style={styles.errorText}>{errors.username}</Text>
                   )}
 
                   {/* Email */}
@@ -325,39 +311,21 @@ const RegistrationScreen = ({ navigation, route }: any) => {
                       }
                     }}
                     placeholder="your@email.com"
-                    placeholderTextColor="#5A5480"
+                    placeholderTextColor={theme.placeholder}
                     style={styles.input}
                     returnKeyType="done"
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoCorrect={false}
-                    selectionColor="#8B6FF7"
+                    selectionColor={theme.primary}
                   />
 
                   {!!errors.email && (
-                    <Text
-                      style={{
-                        color: '#ff6b6b',
-                        marginBottom: hp(1),
-                        marginTop: -hp(1),
-                        fontSize: wp(3.2),
-                      }}
-                    >
-                      {errors.email}
-                    </Text>
+                    <Text style={styles.errorText}>{errors.email}</Text>
                   )}
 
                   {!!errors.general && (
-                    <Text
-                      style={{
-                        color: '#ff6b6b',
-                        marginTop: hp(1),
-                        textAlign: 'center',
-                        fontSize: wp(3.5),
-                      }}
-                    >
-                      {errors.general}
-                    </Text>
+                    <Text style={styles.generalError}>{errors.general}</Text>
                   )}
                 </View>
 
@@ -374,7 +342,7 @@ const RegistrationScreen = ({ navigation, route }: any) => {
                   ]}
                 >
                   {loading ? (
-                    <ActivityIndicator color="#1D1636" />
+                    <ActivityIndicator color={theme.buttonText} />
                   ) : (
                     <Text style={styles.buttonText}>Continue</Text>
                   )}
@@ -402,140 +370,153 @@ const RegistrationScreen = ({ navigation, route }: any) => {
 
 export default RegistrationScreen;
 
-/* KEEP YOUR EXISTING STYLES SAME */
+const createStyles = (theme: any, isDark: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#090814',
-  },
+    safeArea: {
+      flex: 1,
+    },
 
-  safeArea: {
-    flex: 1,
-  },
+    scrollContent: {
+      flexGrow: 1,
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      paddingHorizontal: wp(6),
+      paddingTop: hp(4),
+    },
 
-  scrollContent: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingHorizontal: wp(6),
-    paddingTop: hp(4),
-  },
+    topGlow: {
+      position: 'absolute',
+      width: wp(65),
+      height: wp(65),
+      borderRadius: wp(65),
+      backgroundColor: theme.glowTop,
+      top: -wp(20),
+      left: -wp(18),
+    },
 
-  topGlow: {
-    position: 'absolute',
-    width: wp(65),
-    height: wp(65),
-    borderRadius: wp(65),
-    backgroundColor: 'rgba(88, 51, 181, 0.22)',
-    top: -wp(20),
-    left: -wp(18),
-  },
+    bottomGlow: {
+      position: 'absolute',
+      width: wp(72),
+      height: wp(72),
+      borderRadius: wp(72),
+      backgroundColor: theme.glowBottom,
+      bottom: -wp(30),
+      right: -wp(25),
+    },
 
-  bottomGlow: {
-    position: 'absolute',
-    width: wp(72),
-    height: wp(72),
-    borderRadius: wp(72),
-    backgroundColor: 'rgba(33, 70, 184, 0.18)',
-    bottom: -wp(30),
-    right: -wp(25),
-  },
+    logoOuter: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1.5,
+      borderColor: theme.border,
+      backgroundColor: theme.overlay,
+      marginBottom: hp(0),
+    },
 
-  logoOuter: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    marginBottom: hp(0),
-  },
+    logoInner: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.card,
+    },
 
-  logoInner: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#211B3A',
-  },
+    logo: {
+      width: '58%',
+      height: '58%',
+    },
 
-  logo: {
-    width: '58%',
-    height: '58%',
-  },
+    subtitle: {
+      color: theme.textPrimary,
+      textAlign: 'center',
+      fontWeight: '500',
+      width: '100%',
+      marginTop: hp(1.2),
+    },
 
-  subtitle: {
-    color: '#F3F2FA',
-    textAlign: 'center',
-    fontWeight: '500',
-    width: '100%',
-    marginTop: hp(1.2),
-  },
+    phonePill: {
+      backgroundColor: theme.inputBg,
+      borderRadius: wp(10),
+      paddingVertical: hp(1),
+      paddingHorizontal: wp(5),
+      borderWidth: 1,
+      borderColor: theme.border,
+      marginTop: hp(1),
+      marginBottom: hp(3),
+    },
 
-  phonePill: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderRadius: wp(10),
-    paddingVertical: hp(1),
-    paddingHorizontal: wp(5),
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    marginTop: hp(1),
-    marginBottom: hp(3),
-  },
+    phonePillText: {
+      color: theme.textPrimary,
+      fontSize: wp(3.8),
+      fontWeight: '700',
+      letterSpacing: 0.2,
+    },
 
-  phonePillText: {
-    color: '#D4CCF3',
-    fontSize: wp(3.8),
-    fontWeight: '700',
-    letterSpacing: 0.2,
-  },
+    form: {
+      width: '100%',
+    },
 
-  form: {
-    width: '100%',
-  },
+    label: {
+      color: theme.textSecondary,
+      fontSize: wp(2.8),
+      fontWeight: '700',
+      letterSpacing: 1,
+      marginBottom: hp(0.8),
+      marginTop: hp(0.5),
+    },
 
-  label: {
-    color: '#7A7499',
-    fontSize: wp(2.8),
-    fontWeight: '700',
-    letterSpacing: 1,
-    marginBottom: hp(0.8),
-    marginTop: hp(0.5),
-  },
+    input: {
+      width: '100%',
+      height: hp(6.5),
+      borderRadius: wp(4.5),
+      backgroundColor: theme.inputBg,
+      borderWidth: 1,
+      borderColor: theme.border,
+      color: theme.textPrimary,
+      fontSize: wp(4.2),
+      paddingHorizontal: wp(4.5),
+      fontWeight: '500',
+      marginBottom: hp(2),
+    },
 
-  input: {
-    width: '100%',
-    height: hp(6.5),
-    borderRadius: wp(4.5),
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    color: '#FFFFFF',
-    fontSize: wp(4.2),
-    paddingHorizontal: wp(4.5),
-    fontWeight: '500',
-    marginBottom: hp(2),
-  },
+    button: {
+      width: '100%',
+      height: hp(6.5),
+      borderRadius: wp(5),
+      backgroundColor: theme.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: hp(1),
+      marginBottom: hp(2.5),
+    },
 
-  button: {
-    width: '100%',
-    height: hp(6.5),
-    borderRadius: wp(5),
-    backgroundColor: '#8B6FF7',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: hp(1),
-    marginBottom: hp(2.5),
-  },
+    buttonText: {
+      color: theme.buttonText,
+      fontSize: wp(4.5),
+      fontWeight: '800',
+    },
 
-  buttonText: {
-    color: '#1D1636',
-    fontSize: wp(4.5),
-    fontWeight: '800',
-  },
+    privacyText: {
+      color: theme.textSecondary,
+      fontSize: wp(3.4),
+      fontWeight: '500',
+      textAlign: 'center',
+    },
 
-  privacyText: {
-    color: '#7A7499',
-    fontSize: wp(3.4),
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-});
+    errorText: {
+      color: '#ff6b6b',
+      marginBottom: hp(1),
+      marginTop: -hp(1),
+      fontSize: wp(3.2),
+    },
+
+    generalError: {
+      color: '#ff6b6b',
+      marginTop: hp(1),
+      textAlign: 'center',
+      fontSize: wp(3.5),
+    },
+  });

@@ -17,6 +17,8 @@ import {
 } from 'react-native';
 
 import LinearGradient from 'react-native-linear-gradient';
+import { useTheme } from '../theme/ThemeContext';
+import { getLogo } from '../utils/getLogo';
 
 import {
   SafeAreaView,
@@ -33,6 +35,10 @@ const API_TOKEN = 'Bearer Y7N7Mh9Z7ZLeMSYspeVwdXJ2Ky2LXc';
 const OtpScreen = ({ navigation, route }: any) => {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
+
+  const { theme, isDark } = useTheme();
+
+  const styles = createStyles(theme, isDark);
 
   const isSmallDevice = height < 700;
   const { width } = useWindowDimensions();
@@ -212,13 +218,10 @@ const OtpScreen = ({ navigation, route }: any) => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={isDark ? 'light-content' : 'dark-content'}
       />
 
-      <LinearGradient
-        colors={['#090814', '#121225', '#0B0B18']}
-        style={styles.container}
-      >
+      <LinearGradient colors={theme.gradient} style={styles.container}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <SafeAreaView
             edges={['top', 'bottom']}
@@ -285,7 +288,7 @@ const OtpScreen = ({ navigation, route }: any) => {
                       ]}
                     >
                       <Image
-                        source={require('../assets/images/unheard-logo.png')}
+                        source={getLogo(isDark)}
                         style={styles.logo}
                         resizeMode="contain"
                       />
@@ -333,7 +336,7 @@ const OtpScreen = ({ navigation, route }: any) => {
                         keyboardType="number-pad"
                         maxLength={1}
                         style={styles.otpInput}
-                        selectionColor="#8B6FF7"
+                        selectionColor={theme.primary}
                       />
                     ))}
                   </View>
@@ -365,7 +368,9 @@ const OtpScreen = ({ navigation, route }: any) => {
                     ]}
                   >
                     {loading ? (
-                      <ActivityIndicator color="#1D1636" />
+                      <ActivityIndicator
+                        color={isDark ? '#1D1636' : '#FFFFFF'}
+                      />
                     ) : (
                       <Text style={styles.buttonText}>Verify & Continue</Text>
                     )}
@@ -401,165 +406,164 @@ const OtpScreen = ({ navigation, route }: any) => {
 
 export default OtpScreen;
 
-/* KEEP YOUR EXISTING STYLES SAME */
+const createStyles = (theme: any, isDark: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#090814',
-  },
+    safeArea: {
+      flex: 1,
+    },
 
-  safeArea: {
-    flex: 1,
-  },
+    scrollContent: {
+      flexGrow: 1,
+      paddingHorizontal: wp(6),
+    },
 
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: wp(6),
-  },
+    topGlow: {
+      position: 'absolute',
+      width: wp(65),
+      height: wp(65),
+      borderRadius: wp(65),
+      backgroundColor: theme.glowTop,
+      top: -wp(20),
+      left: -wp(18),
+    },
 
-  topGlow: {
-    position: 'absolute',
-    width: wp(65),
-    height: wp(65),
-    borderRadius: wp(65),
-    backgroundColor: 'rgba(88, 51, 181, 0.22)',
-    top: -wp(20),
-    left: -wp(18),
-  },
+    bottomGlow: {
+      position: 'absolute',
+      width: wp(72),
+      height: wp(72),
+      borderRadius: wp(72),
+      backgroundColor: theme.glowBottom,
+      bottom: -wp(30),
+      right: -wp(25),
+    },
 
-  bottomGlow: {
-    position: 'absolute',
-    width: wp(72),
-    height: wp(72),
-    borderRadius: wp(72),
-    backgroundColor: 'rgba(33, 70, 184, 0.18)',
-    bottom: -wp(30),
-    right: -wp(25),
-  },
+    backButton: {
+      marginTop: hp(1),
 
-  backButton: {
-    marginTop: hp(1),
+      flexDirection: 'row',
+      alignItems: 'center',
 
-    flexDirection: 'row',
-    alignItems: 'center',
+      gap: wp(1.5),
 
-    gap: wp(1.5),
+      backgroundColor: theme.overlay,
 
-    backgroundColor: 'rgba(255,255,255,0.05)',
+      borderRadius: wp(10),
 
-    borderRadius: wp(10),
+      paddingVertical: hp(0.9),
+      paddingHorizontal: wp(4),
 
-    paddingVertical: hp(0.9),
-    paddingHorizontal: wp(4),
+      borderWidth: 1.2,
+      borderColor: theme.border,
 
-    borderWidth: 1.2,
-    borderColor: 'rgba(255,255,255,0.35)', // white outline
+      alignSelf: 'flex-start',
+    },
 
-    alignSelf: 'flex-start',
-  },
+    backText: {
+      color: theme.textPrimary,
+      fontSize: wp(3.5),
+      fontWeight: '700',
+    },
 
-  backText: {
-    color: '#CFC7EE',
-    fontSize: wp(3.5),
-    fontWeight: '700',
-  },
+    content: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingTop: hp(1),
+      paddingBottom: hp(8),
+    },
 
-  content: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: hp(1),
-    paddingBottom: hp(8),
-  },
+    logoOuter: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1.5,
+      borderColor: theme.border,
+      backgroundColor: theme.overlay,
+    },
 
-  logoOuter: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.03)',
-  },
+    logoInner: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.card,
+    },
 
-  logoInner: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#211B3A',
-  },
+    logo: {
+      width: '58%',
+      height: '58%',
+    },
 
-  logo: {
-    width: '58%',
-    height: '58%',
-  },
+    title: {
+      color: theme.textPrimary,
+      fontWeight: '800',
+      textAlign: 'center',
+      letterSpacing: -1,
+    },
 
-  title: {
-    color: '#F3F2FA',
-    fontWeight: '800',
-    textAlign: 'center',
-    letterSpacing: -1,
-  },
+    subtitle: {
+      color: theme.textSecondary,
+      textAlign: 'center',
+      fontWeight: '500',
+      marginTop: hp(1.5),
+    },
 
-  subtitle: {
-    color: '#B7B0D1',
-    textAlign: 'center',
-    fontWeight: '500',
-    marginTop: hp(1.5),
-  },
+    otpContainer: {
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: hp(5),
+      marginBottom: hp(3),
+    },
 
-  otpContainer: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: hp(5),
-    marginBottom: hp(3),
-  },
+    otpInput: {
+      width: wp(13),
+      height: hp(7),
+      borderRadius: wp(3.5),
+      borderWidth: 1.2,
+      borderColor: theme.inputBorder,
+      backgroundColor: theme.inputBackground,
+      color: theme.textPrimary,
+      fontSize: wp(6),
+      fontWeight: '800',
+      textAlign: 'center',
+    },
 
-  otpInput: {
-    width: wp(13),
-    height: hp(7),
-    borderRadius: wp(3.5),
-    borderWidth: 1.2,
-    borderColor: 'rgba(255,255,255,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    color: '#FFFFFF',
-    fontSize: wp(6),
-    fontWeight: '800',
-    textAlign: 'center',
-  },
+    button: {
+      width: '100%',
+      height: hp(6.5),
+      borderRadius: wp(5),
+      backgroundColor: theme.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
 
-  button: {
-    width: '100%',
-    height: hp(6.5),
-    borderRadius: wp(5),
-    backgroundColor: '#8B6FF7',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+    buttonText: {
+      color: isDark ? '#1D1636' : '#FFFFFF',
+      fontSize: wp(4.5),
+      fontWeight: '800',
+    },
 
-  buttonText: {
-    color: '#1D1636',
-    fontSize: wp(4.5),
-    fontWeight: '800',
-  },
+    resendRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: hp(3),
+      gap: wp(2),
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+    },
 
-  resendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: hp(3),
-    gap: wp(2),
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  },
+    resendText: {
+      color: theme.textSecondary,
+      fontSize: wp(3.8),
+      fontWeight: '500',
+    },
 
-  resendText: {
-    color: '#9A94B4',
-    fontSize: wp(3.8),
-    fontWeight: '500',
-  },
-
-  resendButton: {
-    color: '#B896FF',
-    fontSize: wp(3.8),
-    fontWeight: '700',
-  },
-});
+    resendButton: {
+      color: theme.primary,
+      fontSize: wp(3.8),
+      fontWeight: '700',
+    },
+  });

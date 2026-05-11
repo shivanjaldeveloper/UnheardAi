@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,9 +13,15 @@ import {
   Easing,
   Image,
 } from 'react-native';
+
 import LinearGradient from 'react-native-linear-gradient';
+
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { useChatViewModel } from '../viewmodels';
+
+import { useTheme } from '../theme/ThemeContext';
+import { getLogo } from '../utils/getLogo';
 
 // ─────────────────────────────────────────────
 // Types
@@ -27,9 +33,9 @@ type Message = {
 };
 
 // ─────────────────────────────────────────────
-// Typing indicator
+// Typing Indicator
 // ─────────────────────────────────────────────
-const TypingIndicator = () => {
+const TypingIndicator = ({ styles, theme }: any) => {
   const dots = [
     useRef(new Animated.Value(0)).current,
     useRef(new Animated.Value(0)).current,
@@ -80,7 +86,10 @@ const TypingIndicator = () => {
               style={[
                 styles.dot,
                 {
+                  backgroundColor: theme.primary,
+
                   opacity: dot,
+
                   transform: [
                     {
                       translateY: dot.interpolate({
@@ -102,67 +111,65 @@ const TypingIndicator = () => {
 // ─────────────────────────────────────────────
 // Message Bubble
 // ─────────────────────────────────────────────
-const MessageBubble = React.memo(({ item }: { item: Message }) => {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(12)).current;
+const MessageBubble = React.memo(
+  ({ item, styles }: { item: Message; styles: any }) => {
+    const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const isUser = item.sender === 'user';
+    const slideAnim = useRef(new Animated.Value(12)).current;
 
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 280,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
+    const isUser = item.sender === 'user';
 
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 280,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
+    useEffect(() => {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 280,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
 
-  return (
-    <Animated.View
-      style={[
-        styles.messageRow,
-        isUser ? styles.messageRowRight : styles.messageRowLeft,
-        {
-          opacity: fadeAnim,
-          transform: [{ translateY: slideAnim }],
-        },
-      ]}
-    >
-      {/* AI Logo */}
-      {!isUser && (
-        <View style={styles.aiAvatar}>
-          <Image
-            source={require('../assets/images/unheard-logo.png')}
-            style={styles.aiLogo}
-          />
-        </View>
-      )}
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 280,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, []);
 
-      {/* Bubble */}
-      <View
-        style={[styles.bubble, isUser ? styles.userBubble : styles.aiBubble]}
+    return (
+      <Animated.View
+        style={[
+          styles.messageRow,
+          isUser ? styles.messageRowRight : styles.messageRowLeft,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          },
+        ]}
       >
-        <Text
-          style={[
-            styles.bubbleText,
-            isUser ? styles.userBubbleText : styles.aiBubbleText,
-          ]}
+        {!isUser && (
+          <View style={styles.aiAvatar}>
+            <Image source={getLogo(isDark)} style={styles.headerAvatarImage} />
+          </View>
+        )}
+
+        <View
+          style={[styles.bubble, isUser ? styles.userBubble : styles.aiBubble]}
         >
-          {item.text}
-        </Text>
-      </View>
-    </Animated.View>
-  );
-});
+          <Text
+            style={[
+              styles.bubbleText,
+              isUser ? styles.userBubbleText : styles.aiBubbleText,
+            ]}
+          >
+            {item.text}
+          </Text>
+        </View>
+      </Animated.View>
+    );
+  },
+);
 
 // ─────────────────────────────────────────────
 // Main Screen
@@ -170,13 +177,13 @@ const MessageBubble = React.memo(({ item }: { item: Message }) => {
 const ChatScreen = ({ navigation, route }: any) => {
   const insets = useSafeAreaInsets();
 
-  // ── Extract route params from EmotionalEntryScreen ──
+  const { theme, isDark } = useTheme();
+
+  const styles = createStyles(theme, isDark);
+
   const { chatid, emotion, initialUserMessage, initialAssistantReply } =
     route.params ?? {};
 
-  // ── Build seed messages from the initial exchange ──
-  // Must use `role` (not `sender`) so the viewmodel's buildMessage()
-  // can correctly map: role 'user' → sender 'user', everything else → sender 'ai'
   const seedMessages = [];
 
   if (initialUserMessage) {
@@ -195,7 +202,6 @@ const ChatScreen = ({ navigation, route }: any) => {
     });
   }
 
-  // ── Chat ViewModel (handles API messaging) ──
   const vm = useChatViewModel(navigation, route, {
     chatid,
     emotion,
@@ -208,9 +214,7 @@ const ChatScreen = ({ navigation, route }: any) => {
 
   const keyboardHeight = useRef(new Animated.Value(0)).current;
 
-  // ───────────────────────────────────────────
-  // Keyboard Handling
-  // ───────────────────────────────────────────
+  // Keyboard
   useEffect(() => {
     const showEvent =
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -250,19 +254,16 @@ const ChatScreen = ({ navigation, route }: any) => {
     };
   }, []);
 
-  // ───────────────────────────────────────────
-  // Send Message
-  // ───────────────────────────────────────────
+  // Send
   const handleSend = useCallback(() => {
     if (vm.inputText.trim()) {
       vm.sendMessage();
+
       Keyboard.dismiss();
     }
   }, [vm]);
 
-  // ───────────────────────────────────────────
   // Auto Scroll
-  // ───────────────────────────────────────────
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
       flatListRef.current?.scrollToEnd({ animated: true });
@@ -273,21 +274,15 @@ const ChatScreen = ({ navigation, route }: any) => {
     scrollToBottom();
   }, [vm.messages, vm.isTyping]);
 
-  // ───────────────────────────────────────────
-  // UI
-  // ───────────────────────────────────────────
   return (
     <>
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={isDark ? 'light-content' : 'dark-content'}
       />
 
-      <LinearGradient
-        colors={['#0B0819', '#11102A', '#0F1022']}
-        style={styles.container}
-      >
+      <LinearGradient colors={theme.gradient} style={styles.container}>
         {/* Top Safe Area */}
         <View
           style={{
@@ -308,9 +303,8 @@ const ChatScreen = ({ navigation, route }: any) => {
           <View style={styles.headerCenter}>
             <View style={styles.headerAvatar}>
               <Image
-                source={require('../assets/images/unheard-logo.png')}
+                source={getLogo(isDark)}
                 style={styles.headerAvatarImage}
-                resizeMode="contain"
               />
             </View>
 
@@ -336,8 +330,14 @@ const ChatScreen = ({ navigation, route }: any) => {
             ref={flatListRef}
             data={vm.messages}
             keyExtractor={item => item.id}
-            renderItem={({ item }) => <MessageBubble item={item} />}
-            ListFooterComponent={vm.isTyping ? <TypingIndicator /> : null}
+            renderItem={({ item }) => (
+              <MessageBubble item={item} styles={styles} />
+            )}
+            ListFooterComponent={
+              vm.isTyping ? (
+                <TypingIndicator styles={styles} theme={theme} />
+              ) : null
+            }
             contentContainerStyle={styles.messagesList}
             showsVerticalScrollIndicator={false}
             keyboardDismissMode="interactive"
@@ -374,13 +374,14 @@ const ChatScreen = ({ navigation, route }: any) => {
                 value={vm.inputText}
                 onChangeText={vm.setInputText}
                 placeholder="Share whatever you're feeling…"
-                placeholderTextColor="#5A5480"
+                placeholderTextColor={theme.textSecondary}
                 style={styles.input}
                 multiline
                 maxLength={500}
                 blurOnSubmit={false}
                 onSubmitEditing={handleSend}
                 allowFontScaling={false}
+                selectionColor={theme.primary}
               />
 
               <TouchableOpacity
@@ -412,309 +413,333 @@ export default ChatScreen;
 // ─────────────────────────────────────────────
 // Styles
 // ─────────────────────────────────────────────
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-
-  // Header
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-
-  backBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-
-    gap: 6,
-
-    backgroundColor: 'rgba(255,255,255,0.05)',
-
-    borderRadius: 999,
-
-    paddingVertical: 7,
-    paddingHorizontal: 14,
-
-    borderWidth: 1.2,
-    borderColor: 'rgba(255,255,255,0.35)', // white outline
-  },
-
-  backText: {
-    color: '#CFC7EE',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  headerCenter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-
-  headerAvatar: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#6F53B8',
-    justifyContent: 'center',
-    alignItems: 'center',
-
-    shadowColor: '#8B6FF7',
-    shadowOpacity: 0.55,
-    shadowRadius: 10,
-    shadowOffset: {
-      width: 0,
-      height: 0,
+const createStyles = (theme: any, isDark: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
     },
 
-    elevation: 6,
-  },
-
-  headerAvatarEmoji: {
-    fontSize: 20,
-  },
-
-  headerTitle: {
-    color: '#F3F2FA',
-    fontSize: 17,
-    fontWeight: '800',
-    letterSpacing: 0.3,
-  },
-
-  onlineRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    marginTop: 2,
-  },
-
-  onlineDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: '#7EE8A2',
-  },
-
-  headerSubtitle: {
-    color: '#9A94B4',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-
-  headerSpacer: {
-    width: 36,
-  },
-
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: 'rgba(111,83,184,0.22)',
-  },
-
-  // Messages
-  messagesList: {
-    paddingHorizontal: 14,
-    paddingTop: 18,
-    paddingBottom: 110,
-    flexGrow: 1,
-  },
-
-  messageRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    marginBottom: 14,
-    gap: 8,
-  },
-
-  messageRowLeft: {
-    justifyContent: 'flex-start',
-  },
-
-  messageRowRight: {
-    justifyContent: 'flex-end',
-  },
-
-  // Avatars
-  aiAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#6F53B8',
-    justifyContent: 'center',
-    alignItems: 'center',
-
-    alignSelf: 'flex-end',
-
-    marginBottom: 2,
-
-    shadowColor: '#8B6FF7',
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    shadowOffset: {
-      width: 0,
-      height: 0,
+    // Header
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingVertical: 10,
     },
 
-    elevation: 4,
-  },
+    backBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
 
-  aiAvatarEmoji: {
-    fontSize: 15,
-  },
+      gap: 6,
 
-  aiLogo: {
-    width: 20,
-    height: 20,
-    resizeMode: 'contain',
-  },
+      backgroundColor: theme.overlay,
 
-  // Bubbles
-  bubble: {
-    maxWidth: '74%',
-    borderRadius: 18,
-    paddingHorizontal: 15,
-    paddingVertical: 11,
-  },
+      borderRadius: 999,
 
-  aiBubble: {
-    backgroundColor: '#1E1B35',
-    borderBottomLeftRadius: 5,
-  },
+      paddingVertical: 7,
+      paddingHorizontal: 14,
 
-  userBubble: {
-    backgroundColor: '#7B5EEA',
-    borderBottomRightRadius: 5,
-  },
+      borderWidth: 1.2,
+      borderColor: theme.border,
 
-  bubbleText: {
-    fontSize: 15,
-    lineHeight: 22,
-    fontWeight: '500',
-  },
+      shadowColor: isDark ? 'transparent' : '#000',
+      shadowOpacity: isDark ? 0 : 0.05,
+      shadowRadius: 8,
+      shadowOffset: {
+        width: 0,
+        height: 3,
+      },
 
-  aiBubbleText: {
-    color: '#EAE8F5',
-  },
-
-  userBubbleText: {
-    color: '#FFFFFF',
-  },
-
-  // Typing
-  typingBubble: {
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-
-  dotsRow: {
-    flexDirection: 'row',
-    gap: 5,
-    alignItems: 'center',
-    height: 10,
-  },
-
-  dot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: '#8B6FF7',
-  },
-
-  // Input
-  inputWrapper: {
-    paddingHorizontal: 12,
-    paddingTop: 6,
-    backgroundColor: 'transparent',
-  },
-
-  inputBar: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-
-    minHeight: 56,
-
-    backgroundColor: '#16142B',
-
-    borderRadius: 28,
-
-    paddingLeft: 18,
-    paddingRight: 6,
-
-    paddingTop: 8,
-    paddingBottom: 8,
-
-    gap: 6,
-
-    borderWidth: 1,
-    borderColor: 'rgba(139,111,247,0.28)',
-
-    marginBottom: 20,
-
-    shadowColor: '#8B6FF7',
-    shadowOpacity: 0.18,
-    shadowRadius: 14,
-    shadowOffset: {
-      width: 0,
-      height: 2,
+      elevation: isDark ? 0 : 2,
     },
 
-    elevation: 5,
-  },
-
-  input: {
-    flex: 1,
-
-    color: '#FFFFFF',
-
-    fontSize: 15,
-    fontWeight: '400',
-
-    lineHeight: 20,
-
-    maxHeight: 110,
-
-    minHeight: 40,
-
-    paddingTop: 0,
-    paddingBottom: 0,
-
-    textAlignVertical: 'center',
-
-    includeFontPadding: false,
-  },
-
-  sendBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-
-    backgroundColor: '#8B6FF7',
-
-    justifyContent: 'center',
-    alignItems: 'center',
-
-    marginBottom: 1,
-
-    shadowColor: '#8B6FF7',
-    shadowOpacity: 0.45,
-    shadowRadius: 8,
-    shadowOffset: {
-      width: 0,
-      height: 2,
+    backText: {
+      color: theme.textPrimary,
+      fontSize: 14,
+      fontWeight: '700',
     },
 
-    elevation: 4,
-  },
-  headerAvatarImage: {
-    width: 34,
-    height: 34,
-  },
+    headerCenter: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
 
-  sendIcon: {
-    width: 22,
-    height: 22,
-    resizeMode: 'contain',
-  },
-});
+    headerAvatar: {
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+      backgroundColor: theme.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+
+      shadowColor: theme.primary,
+      shadowOpacity: isDark ? 0.45 : 0.18,
+      shadowRadius: 10,
+      shadowOffset: {
+        width: 0,
+        height: 0,
+      },
+
+      elevation: 6,
+    },
+
+    headerAvatarImage: {
+      width: 34,
+      height: 34,
+    },
+
+    headerTitle: {
+      color: theme.textPrimary,
+      fontSize: 17,
+      fontWeight: '800',
+      letterSpacing: 0.3,
+    },
+
+    onlineRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      marginTop: 2,
+    },
+
+    onlineDot: {
+      width: 7,
+      height: 7,
+      borderRadius: 4,
+      backgroundColor: '#7EE8A2',
+    },
+
+    headerSubtitle: {
+      color: theme.textSecondary,
+      fontSize: 12,
+      fontWeight: '500',
+    },
+
+    headerSpacer: {
+      width: 36,
+    },
+
+    divider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: theme.border,
+    },
+
+    // Messages
+    messagesList: {
+      paddingHorizontal: 14,
+      paddingTop: 18,
+      paddingBottom: 110,
+      flexGrow: 1,
+    },
+
+    messageRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      marginBottom: 14,
+      gap: 8,
+    },
+
+    messageRowLeft: {
+      justifyContent: 'flex-start',
+    },
+
+    messageRowRight: {
+      justifyContent: 'flex-end',
+    },
+
+    // Avatars
+    aiAvatar: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: theme.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+
+      alignSelf: 'flex-end',
+
+      marginBottom: 2,
+
+      shadowColor: theme.primary,
+      shadowOpacity: isDark ? 0.35 : 0.12,
+      shadowRadius: 6,
+      shadowOffset: {
+        width: 0,
+        height: 0,
+      },
+
+      elevation: 4,
+    },
+
+    aiAvatarEmoji: {
+      fontSize: 15,
+    },
+
+    aiLogo: {
+      width: 20,
+      height: 20,
+      resizeMode: 'contain',
+    },
+
+    // Bubbles
+    bubble: {
+      maxWidth: '74%',
+      borderRadius: 18,
+      paddingHorizontal: 15,
+      paddingVertical: 11,
+    },
+
+    aiBubble: {
+      backgroundColor: isDark ? '#1E1B35' : '#FFFFFF',
+
+      borderBottomLeftRadius: 5,
+
+      borderWidth: isDark ? 0 : 1,
+      borderColor: theme.border,
+
+      shadowColor: isDark ? 'transparent' : '#000',
+      shadowOpacity: isDark ? 0 : 0.04,
+      shadowRadius: 10,
+      shadowOffset: {
+        width: 0,
+        height: 3,
+      },
+
+      elevation: isDark ? 0 : 2,
+    },
+
+    userBubble: {
+      backgroundColor: theme.primary,
+      borderBottomRightRadius: 5,
+    },
+
+    bubbleText: {
+      fontSize: 15,
+      lineHeight: 22,
+      fontWeight: '500',
+    },
+
+    aiBubbleText: {
+      color: theme.textPrimary,
+    },
+
+    userBubbleText: {
+      color: '#FFFFFF',
+    },
+
+    // Typing
+    typingBubble: {
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+    },
+
+    dotsRow: {
+      flexDirection: 'row',
+      gap: 5,
+      alignItems: 'center',
+      height: 10,
+    },
+
+    dot: {
+      width: 7,
+      height: 7,
+      borderRadius: 4,
+    },
+
+    // Input
+    inputWrapper: {
+      paddingHorizontal: 12,
+      paddingTop: 6,
+      backgroundColor: 'transparent',
+    },
+
+    inputBar: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+
+      minHeight: 56,
+
+      backgroundColor: theme.inputBackground,
+
+      borderRadius: 28,
+
+      paddingLeft: 18,
+      paddingRight: 6,
+
+      paddingTop: 8,
+      paddingBottom: 8,
+
+      gap: 6,
+
+      borderWidth: 1,
+      borderColor: theme.border,
+
+      marginBottom: 20,
+
+      shadowColor: isDark ? theme.primary : '#000',
+      shadowOpacity: isDark ? 0.15 : 0.05,
+      shadowRadius: 14,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+
+      elevation: isDark ? 3 : 2,
+    },
+
+    input: {
+      flex: 1,
+
+      color: theme.textPrimary,
+
+      fontSize: 15,
+      fontWeight: '400',
+
+      lineHeight: 20,
+
+      maxHeight: 110,
+
+      minHeight: 40,
+
+      paddingTop: 0,
+      paddingBottom: 0,
+
+      textAlignVertical: 'center',
+
+      includeFontPadding: false,
+    },
+
+    sendBtn: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+
+      backgroundColor: theme.primary,
+
+      justifyContent: 'center',
+      alignItems: 'center',
+
+      marginBottom: 1,
+
+      shadowColor: theme.primary,
+      shadowOpacity: isDark ? 0.4 : 0.15,
+      shadowRadius: 8,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+
+      elevation: 4,
+    },
+
+    sendIcon: {
+      width: 22,
+      height: 22,
+      resizeMode: 'contain',
+      tintColor: '#FFFFFF',
+    },
+  });

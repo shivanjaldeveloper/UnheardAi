@@ -17,7 +17,8 @@ import {
 
 import LinearGradient from 'react-native-linear-gradient';
 
-import { COLORS } from '../constants/colors';
+import { useTheme } from '../theme/ThemeContext';
+import { getLogo } from '../utils/getLogo';
 import { wp, hp } from '../utils/responsive';
 
 const API_BASE = 'https://unheardapi.primeapps.co.in/api/auth';
@@ -27,6 +28,10 @@ const API_TOKEN = 'Bearer Y7N7Mh9Z7ZLeMSYspeVwdXJ2Ky2LXc';
 const SplashScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
+
+  const { theme, isDark } = useTheme();
+
+  const styles = createStyles(theme);
 
   const isSmallDevice = height < 700;
 
@@ -98,13 +103,10 @@ const SplashScreen = ({ navigation }: any) => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={isDark ? 'light-content' : 'dark-content'}
       />
 
-      <LinearGradient
-        colors={['#090814', '#121225', '#0B0B18']}
-        style={styles.container}
-      >
+      <LinearGradient colors={theme.gradient} style={styles.container}>
         {/* Background Glow Top */}
         <View style={styles.topGlow} />
 
@@ -145,7 +147,7 @@ const SplashScreen = ({ navigation }: any) => {
                 ]}
               >
                 <Image
-                  source={require('../assets/images/unheard-logo.png')}
+                  source={getLogo(isDark)}
                   style={styles.logo}
                   resizeMode="contain"
                 />
@@ -198,85 +200,86 @@ const SplashScreen = ({ navigation }: any) => {
 
 export default SplashScreen;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
+const createStyles = (theme: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
 
-  safeArea: {
-    flex: 1,
-    justifyContent: 'space-between',
-  },
+    safeArea: {
+      flex: 1,
+      justifyContent: 'space-between',
+    },
 
-  centerContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: wp(8),
-  },
+    centerContent: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: wp(8),
+    },
 
-  topGlow: {
-    position: 'absolute',
-    width: wp(65),
-    height: wp(65),
-    borderRadius: wp(65),
-    backgroundColor: 'rgba(88, 51, 181, 0.22)',
-    top: -wp(20),
-    left: -wp(18),
-  },
+    topGlow: {
+      position: 'absolute',
+      width: wp(65),
+      height: wp(65),
+      borderRadius: wp(65),
+      backgroundColor: theme.glowTop,
+      top: -wp(20),
+      left: -wp(18),
+    },
 
-  bottomGlow: {
-    position: 'absolute',
-    width: wp(72),
-    height: wp(72),
-    borderRadius: wp(72),
-    backgroundColor: 'rgba(33, 70, 184, 0.18)',
-    bottom: -wp(30),
-    right: -wp(25),
-  },
+    bottomGlow: {
+      position: 'absolute',
+      width: wp(72),
+      height: wp(72),
+      borderRadius: wp(72),
+      backgroundColor: theme.glowBottom,
+      bottom: -wp(30),
+      right: -wp(25),
+    },
 
-  logoOuter: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.03)',
-  },
+    logoOuter: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1.5,
+      borderColor: theme.border,
+      backgroundColor: theme.overlay,
+    },
 
-  logoInner: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#211B3A',
-  },
+    logoInner: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.card,
+    },
 
-  logo: {
-    width: '58%',
-    height: '58%',
-  },
-  title: {
-    color: COLORS.textPrimary,
-    fontWeight: '800',
-    letterSpacing: -1.5,
-  },
+    logo: {
+      width: '58%',
+      height: '58%',
+    },
+    title: {
+      color: theme.textPrimary,
+      fontWeight: '800',
+      letterSpacing: -1.5,
+    },
 
-  subtitle: {
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
+    subtitle: {
+      color: theme.textSecondary,
+      textAlign: 'center',
+      fontWeight: '500',
+    },
 
-  footerContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: wp(5),
-  },
+    footerContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: wp(5),
+    },
 
-  footerText: {
-    color: '#908AA8',
-    fontSize: wp(3.5),
-    fontWeight: '500',
-    textAlign: 'center',
-    letterSpacing: 0.2,
-  },
-});
+    footerText: {
+      color: '#908AA8',
+      fontSize: wp(3.5),
+      fontWeight: '500',
+      textAlign: 'center',
+      letterSpacing: 0.2,
+    },
+  });
