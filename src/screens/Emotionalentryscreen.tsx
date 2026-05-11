@@ -124,14 +124,9 @@ const EmotionalEntryScreen = ({ navigation }: any) => {
                 bounces={false}
               >
                 {/* Top Bar */}
+                {/* Top Bar */}
                 <View style={styles.topBar}>
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={() => navigation.goBack()}
-                    style={styles.backButton}
-                  >
-                    <Text style={styles.backText}>Back</Text>
-                  </TouchableOpacity>
+                  <View />
 
                   <TouchableOpacity
                     activeOpacity={0.8}
@@ -205,7 +200,7 @@ const EmotionalEntryScreen = ({ navigation }: any) => {
                     style={[
                       styles.button,
                       {
-                        opacity: isValid ? 1 : 0.45,
+                        opacity: isValid ? 1 : 0.7,
                         marginTop: hp(2.5),
                         marginBottom:
                           insets.bottom > 0 ? insets.bottom + hp(1) : hp(3),
@@ -270,44 +265,19 @@ const styles = StyleSheet.create({
     marginBottom: hp(3),
   },
 
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: wp(1.5),
-
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: wp(10),
-
-    paddingVertical: hp(0.9),
-    paddingHorizontal: wp(4),
-
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
-  },
-
-  backArrow: {
-    color: '#CFC7EE',
-    fontSize: wp(3.5),
-    fontWeight: '700',
-    includeFontPadding: false,
-    textAlignVertical: 'center',
-  },
-
-  backText: {
-    color: '#CFC7EE',
-    fontSize: wp(3.5),
-    fontWeight: '700',
-  },
   historyPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: wp(1.5),
+
     backgroundColor: 'rgba(255,255,255,0.05)',
+
     borderRadius: wp(10),
     paddingVertical: hp(0.9),
     paddingHorizontal: wp(4),
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+
+    borderWidth: 1.2,
+    borderColor: 'rgba(255,255,255,0.35)', // white outline
   },
 
   historyIcon: {
@@ -315,7 +285,7 @@ const styles = StyleSheet.create({
   },
 
   historyText: {
-    color: '#CFC7EE',
+    color: '#ffffff',
     fontSize: wp(3.5),
     fontWeight: '700',
   },
@@ -326,7 +296,7 @@ const styles = StyleSheet.create({
     lineHeight: hp(5),
     fontWeight: '700',
     letterSpacing: -1,
-    marginBottom: hp(1.2),
+    marginBottom: hp(-1),
   },
 
   subtitle: {
@@ -334,7 +304,7 @@ const styles = StyleSheet.create({
     fontSize: wp(3.8),
     lineHeight: hp(2.8),
     fontWeight: '500',
-    marginBottom: hp(2.2),
+    marginBottom: hp(2.0),
   },
 
   moodGrid: {
@@ -403,7 +373,7 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: '#1D1636',
+    color: '#ffffff',
     fontSize: wp(4.5),
     fontWeight: '800',
     letterSpacing: 0.2,

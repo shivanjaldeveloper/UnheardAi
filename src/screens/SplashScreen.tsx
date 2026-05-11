@@ -92,7 +92,7 @@ const SplashScreen = ({ navigation }: any) => {
     initializeApp();
   }, [navigation]);
 
-  const logoSize = width * 0.38;
+  const logoSize = width * 0.22;
   return (
     <>
       <StatusBar
@@ -158,7 +158,7 @@ const SplashScreen = ({ navigation }: any) => {
                 styles.title,
                 {
                   fontSize: isSmallDevice ? wp(11) : wp(12),
-                  marginTop: hp(1.8),
+                  marginTop: hp(0),
                 },
               ]}
             >
@@ -172,7 +172,7 @@ const SplashScreen = ({ navigation }: any) => {
                 {
                   fontSize: isSmallDevice ? wp(3) : wp(4),
                   lineHeight: isSmallDevice ? hp(3) : hp(3.4),
-                  marginTop: hp(1.2),
+                  marginTop: hp(0.1),
                 },
               ]}
             >
@@ -239,16 +239,20 @@ const styles = StyleSheet.create({
   logoOuter: {
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
   },
 
   logoInner: {
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#211B3A',
   },
 
   logo: {
-    width: '100%',
-    height: '100%',
+    width: '58%',
+    height: '58%',
   },
   title: {
     color: COLORS.textPrimary,

@@ -169,7 +169,7 @@ const RegistrationScreen = ({ navigation, route }: any) => {
           >
             <KeyboardAvoidingView
               style={{ flex: 1 }}
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
               keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : hp(2)}
             >
               <ScrollView
@@ -178,12 +178,14 @@ const RegistrationScreen = ({ navigation, route }: any) => {
                 contentContainerStyle={[
                   styles.scrollContent,
                   {
-                    paddingBottom: hp(10),
+                    paddingBottom: hp(18),
+                    minHeight: height + hp(10),
                   },
                 ]}
                 automaticallyAdjustKeyboardInsets
                 keyboardDismissMode="on-drag"
-                bounces={false}
+                bounces
+                overScrollMode="always"
               >
                 {/* Logo */}
                 <View
@@ -415,8 +417,9 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     alignItems: 'center',
+    justifyContent: 'flex-start',
     paddingHorizontal: wp(6),
-    paddingTop: hp(2),
+    paddingTop: hp(4),
   },
 
   topGlow: {

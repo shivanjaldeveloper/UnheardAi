@@ -223,7 +223,7 @@ const LoginScreen = ({ navigation }: any) => {
                       <ActivityIndicator color="#1D1636" />
                     ) : (
                       <Text style={styles.buttonText}>Send OTP</Text>
-                    )}{' '}
+                    )}
                   </TouchableOpacity>
                   {error ? (
                     <Text

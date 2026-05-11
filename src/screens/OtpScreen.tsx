@@ -453,8 +453,8 @@ const styles = StyleSheet.create({
     paddingVertical: hp(0.9),
     paddingHorizontal: wp(4),
 
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(255,255,255,0.35)', // white outline
 
     alignSelf: 'flex-start',
   },

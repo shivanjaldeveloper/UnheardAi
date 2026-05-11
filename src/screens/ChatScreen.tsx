@@ -298,11 +298,11 @@ const ChatScreen = ({ navigation, route }: any) => {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
-            activeOpacity={0.7}
+            activeOpacity={0.8}
             onPress={() => navigation.goBack()}
             style={styles.backBtn}
           >
-            <Text style={styles.backArrow}>←</Text>
+            <Text style={styles.backText}>Back</Text>
           </TouchableOpacity>
 
           <View style={styles.headerCenter}>
@@ -311,7 +311,7 @@ const ChatScreen = ({ navigation, route }: any) => {
                 source={require('../assets/images/unheard-logo.png')}
                 style={styles.headerAvatarImage}
                 resizeMode="contain"
-              />{' '}
+              />
             </View>
 
             <View>
@@ -427,18 +427,27 @@ const styles = StyleSheet.create({
   },
 
   backBtn: {
-    width: 36,
-    height: 36,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+
+    gap: 6,
+
+    backgroundColor: 'rgba(255,255,255,0.05)',
+
+    borderRadius: 999,
+
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+
+    borderWidth: 1.2,
+    borderColor: 'rgba(255,255,255,0.35)', // white outline
   },
 
-  backArrow: {
-    color: '#B7B0D1',
-    fontSize: 30,
-    fontWeight: '600',
+  backText: {
+    color: '#CFC7EE',
+    fontSize: 14,
+    fontWeight: '700',
   },
-
   headerCenter: {
     flexDirection: 'row',
     alignItems: 'center',
