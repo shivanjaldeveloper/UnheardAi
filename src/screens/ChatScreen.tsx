@@ -112,7 +112,15 @@ const TypingIndicator = ({ styles, theme }: any) => {
 // Message Bubble
 // ─────────────────────────────────────────────
 const MessageBubble = React.memo(
-  ({ item, styles }: { item: Message; styles: any }) => {
+  ({
+    item,
+    styles,
+    isDark,
+  }: {
+    item: Message;
+    styles: any;
+    isDark: boolean;
+  }) => {
     const fadeAnim = useRef(new Animated.Value(0)).current;
 
     const slideAnim = useRef(new Animated.Value(12)).current;
@@ -331,7 +339,7 @@ const ChatScreen = ({ navigation, route }: any) => {
             data={vm.messages}
             keyExtractor={item => item.id}
             renderItem={({ item }) => (
-              <MessageBubble item={item} styles={styles} />
+              <MessageBubble item={item} styles={styles} isDark={isDark} />
             )}
             ListFooterComponent={
               vm.isTyping ? (
